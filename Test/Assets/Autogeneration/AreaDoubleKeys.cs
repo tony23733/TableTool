@@ -97,9 +97,9 @@ public class AreaDoubleKeysManager
     /// </summary>
     public static AreaDoubleKeysData GetItem(int ID, typeEnum type)
     {
-		var key = new AreaDoubleKeysKey();
-		key.ID = ID;
-		key.type = type;
+        var key = new AreaDoubleKeysKey();
+        key.ID = ID;
+        key.type = type;
         return mData[key];
     }
 }

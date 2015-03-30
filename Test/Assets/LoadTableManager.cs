@@ -7,13 +7,13 @@ using System.IO;
 
 public class LoadTableManager
 {
-	/// <summary>
-	/// 解析填充数据
-	/// </summary>
-	/// <param name="tableAsset">二进制表数据</param>
-	/// <param name="dataManagerType">自动生成的数据管理器类型</param>
-	/// <typeparam name="T">自动生成的数据类型</typeparam>
-	public static void FillTable<T>(TextAsset tableAsset, Type dataManagerType) where T : new ()
+    /// <summary>
+    /// 解析填充数据
+    /// </summary>
+    /// <param name="tableAsset">二进制表数据</param>
+    /// <param name="dataManagerType">自动生成的数据管理器类型</param>
+    /// <typeparam name="T">自动生成的数据类型</typeparam>
+    public static void FillTable<T>(TextAsset tableAsset, Type dataManagerType) where T : new()
     {
         var list = LoadDataTemplate<T>(tableAsset);
         MethodInfo clearMethod = dataManagerType.GetMethod("Clear");
@@ -24,13 +24,13 @@ public class LoadTableManager
             addItemMethod.Invoke(null, new object[] { v });
         }
     }
-	
-	/// <summary>
-	/// 加载数据模板
-	/// </summary>
-	/// <returns>数据列表</returns>
-	/// <param name="data">二进制表数据</param>
-	/// <typeparam name="T">自动生成的数据类型</typeparam>
+
+    /// <summary>
+    /// 加载数据模板
+    /// </summary>
+    /// <returns>数据列表</returns>
+    /// <param name="data">二进制表数据</param>
+    /// <typeparam name="T">自动生成的数据类型</typeparam>
     private static List<T> LoadDataTemplate<T>(TextAsset data) where T : new()
     {
         List<T> list = new List<T>();
@@ -39,9 +39,10 @@ public class LoadTableManager
             Type type = typeof(T);
             FieldInfo[] fields = type.GetFields();
             TableDataType[] dataTypes = new TableDataType[fields.Length];
-            /*int version = */reader.ReadInt32();
+            /*int version = */
+            reader.ReadInt32();
             int dataLength = reader.ReadInt32();
-            for (int i = 0; i < dataTypes.Length;++i)
+            for (int i = 0; i < dataTypes.Length; ++i)
             {
                 dataTypes[i] = (TableDataType)reader.ReadByte();
             }
@@ -72,7 +73,7 @@ public class LoadTableManager
                         case TableDataType.DOUBLE:
                             fieldData = reader.ReadDouble();
                             break;
-						// TODO:根据需要扩展类型
+                        // TODO:根据需要扩展类型
                         default: break;
                     }
                     if (fieldData != null)
@@ -105,6 +106,6 @@ public class LoadTableManager
         ENUM,
         LONG,
         DOUBLE
-		// TODO:根据需求扩展类型
+        // TODO:根据需求扩展类型
     }
 }
