@@ -380,6 +380,7 @@ using System.Collections.Generic;
                                 double.TryParse(lineData[i], out doubleData);
                                 writer.Write(doubleData);
                                 break;
+                            // TODO:根据需求扩展类型
                             default:
                                 break;
                         }
@@ -424,6 +425,7 @@ using System.Collections.Generic;
                 case "DOUBLE":
                     data.types.Add(TableDataType.DOUBLE);
                     break;
+                // TODO:根据需求扩展类型
                 default:
                     Console.WriteLine("指定类型{0}不存在", assignTypeSymbol);
                     break;
@@ -481,6 +483,7 @@ using System.Collections.Generic;
                     return "long";
                 case TableDataType.DOUBLE:
                     return "double";
+                // TODO:根据需求扩展类型
                 default:
                     return "";
             }
@@ -649,5 +652,6 @@ using System.Collections.Generic;
         ENUM,
         LONG,
         DOUBLE
+        // TODO:根据需求扩展类型
     }
 }

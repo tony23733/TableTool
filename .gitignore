@@ -42,6 +42,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+TableTool/bin/Debug/
 TableTool/bin/Debug/TableTool.vshost.exe.manifest
 TableTool/obj/Debug/App.g.cs
 TableTool/obj/Debug/App.g.i.cs
@@ -52,3 +53,9 @@ TableTool/obj/Debug/TableTool.csproj.FileListAbsolute.txt
 TableTool/obj/Debug/MainWindow.g.i.cs
 TableTool/obj/Debug/MainWindow.g.cs
 TableTool/obj/Debug/MainWindow.g.cs
+Test/Library/
+Test/Test-csharp.sln
+Test/Test.sln
+Test/Test.userprefs
+Test/Assembly-CSharp-vs.csproj
+Test/Assembly-CSharp.csproj
