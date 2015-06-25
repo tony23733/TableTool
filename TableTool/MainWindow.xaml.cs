@@ -92,7 +92,14 @@ namespace TableTool
             {
                 filePaths[i] = mFilePathList[i].filePath;
             }
-            OutputTable.OneKeyBuild(filePaths);
+            CodeType codeTypes = CodeType.NULL;
+            if (U3dCsCheckBox.IsChecked.HasValue && U3dCsCheckBox.IsChecked.Value)
+                codeTypes |= CodeType.U3D_CS;
+            if (JavaCheckBox.IsChecked.HasValue && JavaCheckBox.IsChecked.Value)
+                codeTypes |= CodeType.JAVA;
+            if (CppCheckBox.IsChecked.HasValue && CppCheckBox.IsChecked.Value)
+                codeTypes |= CodeType.CPP;
+            OutputTable.OneKeyBuild(filePaths, codeTypes);
         }
 
         private void Grid_Drop(object sender, DragEventArgs e)
@@ -110,6 +117,8 @@ namespace TableTool
                 }
                 Console.WriteLine(fileName);
             }
+            if (mFilePathList.Count > 0)
+                PromptLabel.Visibility = System.Windows.Visibility.Hidden;
         }
 
         private void AllSelectCheckBox_Click(object sender, RoutedEventArgs e)
@@ -149,6 +158,8 @@ namespace TableTool
             mSelectedList.Clear();
             this.listView1.Items.Refresh();
             RefreshCheckBox();
+            if (mFilePathList.Count == 0)
+                PromptLabel.Visibility = System.Windows.Visibility.Visible;
         }
     }
 }
