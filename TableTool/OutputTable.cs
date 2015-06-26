@@ -214,10 +214,30 @@ namespace TableTool
             string assignTypeString = obj.ToString().Trim();
             data.typeStrings.Add(assignTypeString);
             string assignTypeSymbol = assignTypeString.Split(new char[] { '\n', '\r' }, System.StringSplitOptions.RemoveEmptyEntries)[0];
-            if (assignTypeSymbol[0] == '*')     // 主键
+            // 提取标记符号
+            List<char> assignFlagSymbolList = new List<char>();     // 指定标记符号列表
+            for (int i = 0; i < assignTypeSymbol.Length; ++i )
             {
-                assignTypeSymbol = assignTypeSymbol.Substring(1);
-                data.mainKeyIndexs.Add(colmunsIndex);
+                char c = assignTypeSymbol[i];
+                bool b = false;
+                switch(c)
+                {
+                    case '*': // 主键
+                        data.mainKeyIndexs.Add(colmunsIndex);
+                        break;
+                    case '#': // 生成枚举定义代码
+                        data.enumTypeIndexs.Add(colmunsIndex);
+                        break;
+                    case '-': // 忽略，不生成
+                        data.ignoreFieldIndexs.Add(colmunsIndex);
+                        break;
+                    default:
+                        b = true;
+                        assignTypeSymbol = assignTypeSymbol.Substring(i);
+                        break;
+                }
+                if (b)
+                    break;
             }
             switch (assignTypeSymbol)
             {

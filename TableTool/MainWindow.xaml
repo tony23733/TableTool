@@ -28,7 +28,7 @@
         <Label x:Name="PromptLabel" Content="拖动xls表文件到此区域" Foreground="LightGray" Margin="97,117,112,198" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="48" Width="503"/>
         <Button Content="X" HorizontalAlignment="Left" Height="18" Margin="22,10,0,0" Grid.Row="1" VerticalAlignment="Top" Width="20" ToolTip="删除选中" Click="Button_Click_Delete"/>
         <CheckBox x:Name="U3dCsCheckBox" Content="U3D(C#)" HorizontalAlignment="Left" Margin="22,33,0,0" Grid.Row="1" VerticalAlignment="Top" Width="70"/>
-        <CheckBox x:Name="JavaCheckBox" Content="Java" Margin="97,33,562,0" Grid.Row="1" VerticalAlignment="Top"/>
-        <CheckBox x:Name="CppCheckBox" Content="C++" HorizontalAlignment="Left" Margin="150,33,0,0" Grid.Row="1" VerticalAlignment="Top" Width="46"/>
+        <CheckBox x:Name="JavaCheckBox" Content="Java" Margin="97,33,562,0" Grid.Row="1" VerticalAlignment="Top" IsEnabled="False"/>
+        <CheckBox x:Name="CppCheckBox" Content="C++" HorizontalAlignment="Left" Margin="150,33,0,0" Grid.Row="1" VerticalAlignment="Top" Width="46" IsEnabled="False"/>
     </Grid>
 </Window>
