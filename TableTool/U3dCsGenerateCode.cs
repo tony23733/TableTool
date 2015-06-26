@@ -105,123 +105,135 @@ using System.Collections.Generic;
 
         public void GenerateCodeData(ExcelData excelData)
         {
-            StringBuilder codeBuilder = new StringBuilder();
-            // 生成文件头
-            string date = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString();
-            StringBuilder mainKeyBuilder = new StringBuilder();     // 文件头关键字段说明
-            foreach (var v in excelData.mainKeyIndexs)
-                mainKeyBuilder.Append(excelData.names[v]).Append(" ");
-            StringBuilder ignoreKeyBuilder = new StringBuilder();       // 文件头忽略字段说明
-            foreach (var v in excelData.ignoreFieldIndexs)
-                ignoreKeyBuilder.Append(excelData.names[v]).Append(" ");
-            string headText = FormatCode(codeHeadTemplate, date, excelData.fileNameWithExtension, mainKeyBuilder, ignoreKeyBuilder);
-            codeBuilder.Append(headText);
-            StringBuilder classCodeBuilder = new StringBuilder();       // 类代码部分，不含文件头说明和命名空间
-            // 生成主键，key超过1时生成数据结构
-            if (excelData.mainKeyIndexs.Count > 1)
+            try
             {
-                TableDataType[] mainKeyTypes = new TableDataType[excelData.mainKeyIndexs.Count];
-                string[] mainKeyAttributeNames = new string[excelData.mainKeyIndexs.Count];
-                string[] mainKeyComments = new string[excelData.mainKeyIndexs.Count];
-                for (int i = 0; i < excelData.mainKeyIndexs.Count; ++i)
+                StringBuilder codeBuilder = new StringBuilder();
+                List<int> mainKeyIndexList = new List<int>(excelData.mainKeyIndexs);        // 主关键字列表
+                int[] ignoreFieldIndexArray = excelData.ignoreFieldIndexs.ToArray();        // 忽略字段列表
+                mainKeyIndexList.RemoveAll((match) => { return excelData.ignoreFieldIndexs.Contains(match); });
+                if (mainKeyIndexList.Count == 0)
+                    throw new Exception("没有有效的关键字段");
+                // 生成文件头
+                string date = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString();
+                StringBuilder mainKeyBuilder = new StringBuilder();     // 文件头关键字段说明
+                foreach (var v in mainKeyIndexList)
+                    mainKeyBuilder.Append(excelData.names[v]).Append(" ");
+                StringBuilder ignoreKeyBuilder = new StringBuilder();       // 文件头忽略字段说明
+                foreach (var v in excelData.ignoreFieldIndexs)
+                    ignoreKeyBuilder.Append(excelData.names[v]).Append(" ");
+                string headText = FormatCode(codeHeadTemplate, date, excelData.fileNameWithExtension, mainKeyBuilder, ignoreKeyBuilder);
+                codeBuilder.Append(headText);
+                StringBuilder classCodeBuilder = new StringBuilder();       // 类代码部分，不含文件头说明和命名空间
+                // 生成主键，key超过1时生成数据结构
+                if (mainKeyIndexList.Count > 1)
                 {
-                    int index = excelData.mainKeyIndexs[i];
-                    mainKeyTypes[i] = excelData.types[index];
-                    mainKeyAttributeNames[i] = excelData.names[index];
-                    mainKeyComments[i] = excelData.descriptions[index];
+                    TableDataType[] mainKeyTypes = new TableDataType[mainKeyIndexList.Count];
+                    string[] mainKeyAttributeNames = new string[mainKeyIndexList.Count];
+                    string[] mainKeyComments = new string[mainKeyIndexList.Count];
+                    for (int i = 0; i < mainKeyIndexList.Count; ++i)
+                    {
+                        int index = mainKeyIndexList[i];
+                        mainKeyTypes[i] = excelData.types[index];
+                        mainKeyAttributeNames[i] = excelData.names[index];
+                        mainKeyComments[i] = excelData.descriptions[index];
+                    }
+                    string mainKeyAttributeCode = GenerateAttributeCode(mainKeyTypes, mainKeyAttributeNames, mainKeyComments, new int[0]);
+                    classCodeBuilder.Append(FormatCode(
+                        codeStructTemplate, GetKeyStructName(excelData.fileName), mainKeyAttributeCode
+                        ));
                 }
-                string mainKeyAttributeCode = GenerateAttributeCode(mainKeyTypes, mainKeyAttributeNames, mainKeyComments);
+                // 生成数据结构
+                StringBuilder dataCodeBuilder = new StringBuilder();        // 数据代码
+                string dataAttributeCode = GenerateAttributeCode(excelData.types.ToArray(), excelData.names.ToArray(), excelData.descriptions.ToArray(), ignoreFieldIndexArray);
+                dataCodeBuilder.Append(dataAttributeCode).Append("\r\n");
+                StringBuilder newKeyBuilder = new StringBuilder();      // 实例化key
+                string keyTypeString = "";
+                if (mainKeyIndexList.Count > 1)      // 多个参数时
+                {
+                    newKeyBuilder.Append("\t\tvar key = new ").Append(GetKeyStructName(excelData.fileName)).Append("();\r\n");
+                    for (int i = 0; i < mainKeyIndexList.Count; ++i)
+                    {
+                        int index = mainKeyIndexList[i];
+                        string paramName = excelData.names[index];
+                        newKeyBuilder.Append("\t\tkey.").Append(paramName).Append(" = ").Append(paramName).Append(";");
+                        if (i != mainKeyIndexList.Count - 1)
+                            newKeyBuilder.Append("\r\n");
+                    }
+                    keyTypeString = GetKeyStructName(excelData.fileName);
+                }
+                else
+                {
+                    int index = mainKeyIndexList[0];
+                    newKeyBuilder.Append("\t\tvar key = ").Append(excelData.names[index]).Append(";");
+                    keyTypeString = GenerateTypeByTableDataType(excelData.types[index], excelData.names[index]);
+                }
+                dataCodeBuilder.Append(FormatCode(codeGetKeyTemplate, keyTypeString, newKeyBuilder));
                 classCodeBuilder.Append(FormatCode(
-                    codeStructTemplate, GetKeyStructName(excelData.fileName), mainKeyAttributeCode
+                    codeStructTemplate, GetDataStructName(excelData.fileName), dataCodeBuilder
                     ));
-            }
-            // 生成数据结构
-            StringBuilder dataCodeBuilder = new StringBuilder();        // 数据代码
-            string dataAttributeCode = GenerateAttributeCode(excelData.types.ToArray(), excelData.names.ToArray(), excelData.descriptions.ToArray());
-            dataCodeBuilder.Append(dataAttributeCode).Append("\r\n");
-            StringBuilder newKeyBuilder = new StringBuilder();      // 实例化key
-            string keyTypeString = "";
-            if (excelData.mainKeyIndexs.Count > 1)      // 多个参数时
-            {
-                newKeyBuilder.Append("\t\tvar key = new ").Append(GetKeyStructName(excelData.fileName)).Append("();\r\n");
-                for (int i = 0; i < excelData.mainKeyIndexs.Count; ++i)
+                // 生成枚举
+                List<int> enumIndexs = new List<int>();
+                for (int i = 0; i < excelData.types.Count; ++i)
                 {
-                    int index = excelData.mainKeyIndexs[i];
-                    string paramName = excelData.names[index];
-                    newKeyBuilder.Append("\t\tkey.").Append(paramName).Append(" = ").Append(paramName).Append(";");
-                    if (i != excelData.mainKeyIndexs.Count - 1)
-                        newKeyBuilder.Append("\r\n");
+                    if (excelData.types[i] == TableDataType.ENUM && excelData.enumTypeIndexs.Contains(i))       // 判断是枚举类型且标记"#"
+                    {
+                        enumIndexs.Add(i);
+                    }
                 }
-                keyTypeString = GetKeyStructName(excelData.fileName);
-            }
-            else
-            {
-                int index = excelData.mainKeyIndexs[0];
-                newKeyBuilder.Append("\t\tvar key = ").Append(excelData.names[index]).Append(";");
-                keyTypeString = GenerateTypeByTableDataType(excelData.types[index], excelData.names[index]);
-            }
-            dataCodeBuilder.Append(FormatCode(codeGetKeyTemplate, keyTypeString, newKeyBuilder));
-            classCodeBuilder.Append(FormatCode(
-                codeStructTemplate, GetDataStructName(excelData.fileName), dataCodeBuilder
-                ));
-            // 生成枚举
-            List<int> enumIndexs = new List<int>();
-            for (int i = 0; i < excelData.types.Count; ++i)
-            {
-                if (excelData.types[i] == TableDataType.ENUM && excelData.enumTypeIndexs.Contains(i))       // 判断是枚举类型且标记"#"
+                if (enumIndexs.Count > 0)
                 {
-                    enumIndexs.Add(i);
+                    string[] attributeNames = new string[enumIndexs.Count];
+                    string[] typeStrings = new string[enumIndexs.Count];
+                    for (int i = 0; i < enumIndexs.Count; ++i)
+                    {
+                        int index = enumIndexs[i];
+                        attributeNames[i] = excelData.names[index];
+                        typeStrings[i] = excelData.typeStrings[index];
+                    }
+                    string enumCode = GenerateEnemCode(attributeNames, typeStrings);
+                    classCodeBuilder.Append(enumCode);
                 }
-            }
-            if (enumIndexs.Count > 0)
-            {
-                string[] attributeNames = new string[enumIndexs.Count];
-                string[] typeStrings = new string[enumIndexs.Count];
-                for (int i = 0; i < enumIndexs.Count; ++i)
+                // 生成数据管理器
+                string[] managerCodeUnits = new string[11];
+                managerCodeUnits[0] = excelData.fileName;
+                string keyType = "";
+                if (mainKeyIndexList.Count > 1)
                 {
-                    int index = enumIndexs[i];
-                    attributeNames[i] = excelData.names[index];
-                    typeStrings[i] = excelData.typeStrings[index];
+                    keyType = GetKeyStructName(excelData.fileName);
                 }
-                string enumCode = GenerateEnemCode(attributeNames, typeStrings);
-                classCodeBuilder.Append(enumCode);
+                else
+                {
+                    int index = mainKeyIndexList[0];
+                    keyType = GenerateTypeByTableDataType(excelData.types[index], excelData.names[index]);
+                }
+                managerCodeUnits[1] = managerCodeUnits[3] = managerCodeUnits[5] = keyType;
+                managerCodeUnits[2] = managerCodeUnits[4] = managerCodeUnits[6] = managerCodeUnits[7] =
+                    managerCodeUnits[8] = GetDataStructName(excelData.fileName);
+                StringBuilder addItemParamBuilder = new StringBuilder();
+                for (int i = 0; i < mainKeyIndexList.Count; ++i)
+                {
+                    int index = mainKeyIndexList[i];
+                    string paramType = GenerateTypeByTableDataType(excelData.types[index], excelData.names[i]);
+                    addItemParamBuilder.Append(paramType).Append(" ").Append(excelData.names[i]);
+                    if (i != mainKeyIndexList.Count - 1)
+                        addItemParamBuilder.Append(", ");
+                }
+                managerCodeUnits[9] = addItemParamBuilder.ToString();
+                managerCodeUnits[10] = newKeyBuilder.ToString();     // 与GetKey函数相同
+                classCodeBuilder.Append(FormatCode(codeManagerTemplate, managerCodeUnits));
+                // 将类代码、命名空间添加到代码
+                string namespaceClassCode = FormatCode(namespaceTemplate, classCodeBuilder);
+                codeBuilder.Append(namespaceClassCode);
+                // 保存代码文件
+                string codeFilePath = excelData.path + "/" + excelData.fileName + ".cs";
+                using (StreamWriter sw = new StreamWriter(codeFilePath, false))
+                {
+                    sw.Write(codeBuilder);
+                }
             }
-            // 生成数据管理器
-            string[] managerCodeUnits = new string[11];
-            managerCodeUnits[0] = excelData.fileName;
-            string keyType = "";
-            if (excelData.mainKeyIndexs.Count > 1)
+            catch (Exception ex)
             {
-                keyType = GetKeyStructName(excelData.fileName);
-            }
-            else
-            {
-                int index = excelData.mainKeyIndexs[0];
-                keyType = GenerateTypeByTableDataType(excelData.types[index], excelData.names[index]);
-            }
-            managerCodeUnits[1] = managerCodeUnits[3] = managerCodeUnits[5] = keyType;
-            managerCodeUnits[2] = managerCodeUnits[4] = managerCodeUnits[6] = managerCodeUnits[7] =
-                managerCodeUnits[8] = GetDataStructName(excelData.fileName);
-            StringBuilder addItemParamBuilder = new StringBuilder();
-            for (int i = 0; i < excelData.mainKeyIndexs.Count; ++i)
-            {
-                int index = excelData.mainKeyIndexs[i];
-                string paramType = GenerateTypeByTableDataType(excelData.types[index], excelData.names[i]);
-                addItemParamBuilder.Append(paramType).Append(" ").Append(excelData.names[i]);
-                if (i != excelData.mainKeyIndexs.Count - 1)
-                    addItemParamBuilder.Append(", ");
-            }
-            managerCodeUnits[9] = addItemParamBuilder.ToString();
-            managerCodeUnits[10] = newKeyBuilder.ToString();     // 与GetKey函数相同
-            classCodeBuilder.Append(FormatCode(codeManagerTemplate, managerCodeUnits));
-            // 将类代码、命名空间添加到代码
-            string namespaceClassCode = FormatCode(namespaceTemplate, classCodeBuilder);
-            codeBuilder.Append(namespaceClassCode);
-            // 保存代码文件
-            string codeFilePath = excelData.path + "/" + excelData.fileName + ".cs";
-            using (StreamWriter sw = new StreamWriter(codeFilePath, false))
-            {
-                sw.Write(codeBuilder);
+                throw new Exception(excelData.fileName + ":" + ex.Message, ex);
             }
         }
 
@@ -313,20 +325,22 @@ using System.Collections.Generic;
         /// <param name="attributeNames"></param>
         /// <param name="comments"></param>
         /// <returns></returns>
-        private string GenerateAttributeCode(TableDataType[] types, string[] attributeNames, string[] comments)
+        private string GenerateAttributeCode(TableDataType[] types, string[] attributeNames, string[] comments, int[] ignoreFields)
         {
-            if (types.Length != attributeNames.Length)
+            if (types.Length != attributeNames.Length || types.Length != comments.Length)
             {
-                Console.WriteLine("类型数量与变量数量不匹配。");
-                return "";
+                throw new Exception("字段、类型、说明数量不匹配。");
             }
             StringBuilder attributeBuilder = new StringBuilder();
             for (int i = 0; i < types.Length; ++i)
             {
+                if (Array.Exists<int>(ignoreFields, (match) => { return match == i; }))
+                    continue;
                 attributeBuilder.Append(GenerateAttributeCode(types[i], attributeNames[i], comments[i]));
-                if (i != types.Length - 1)
-                    attributeBuilder.Append("\r\n");
+                attributeBuilder.Append("\r\n");
             }
+            if (attributeBuilder.Length > 0)
+                attributeBuilder.Remove(attributeBuilder.Length - 2, 2);
             return attributeBuilder.ToString();
         }
 

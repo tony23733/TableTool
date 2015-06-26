@@ -126,7 +126,7 @@ namespace TableTool
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "数据错误");
+                MessageBox.Show(data.fileName + ":" + ex.Message, "数据错误");
                 return null;
             }
             return data;
@@ -158,12 +158,18 @@ namespace TableTool
             {
                 writer.Write(dataVersion);      // 版本号
                 writer.Write(excelData.values.Count);
-                foreach (var v in excelData.types)
-                    writer.Write((Byte)v);
+                for (int i = 0; i < excelData.types.Count; ++i)
+                {
+                    if (excelData.ignoreFieldIndexs.Contains(i))
+                        continue;
+                    writer.Write((Byte)excelData.types[i]);
+                }
                 foreach (var lineData in excelData.values)
                 {
                     for (int i = 0; i < lineData.Count; ++i)
                     {
+                        if (excelData.ignoreFieldIndexs.Contains(i))
+                            continue;
                         switch (excelData.types[i])
                         {
                             case TableDataType.INT:
