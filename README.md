@@ -33,23 +33,23 @@ Enumerate2=2
 
 ## 文件结构
 生成工具：  
---TableTool.sln  
---TableTool  
+>--TableTool.sln  
+>--TableTool  
 
 Unity3D读取数据脚本：  
---LoadTableManager  
-  --Unity  
-    --LoadTableManager.cs  
+>--LoadTableManager  
+>>--Unity  
+>>>--LoadTableManager.cs  
 
 示例表格：  
---Test  
-  --Table  
-    --AreaMainKey.xls  
-    --AreaDoubleKeys.xls  
+>--Test  
+>>--Table  
+>>>--AreaMainKey.xls  
+>>>--AreaDoubleKeys.xls  
 
 Unity3D示例工程：  
---Test  
-  --UnityProject  
+>--Test  
+>>--UnityProject  
 
 ## 示例
 AreaMainKey.xls和AreaDoubleKeys.xls数据内容完全一样。AreaDoubleKeys是演示多个检索关键字的配置方法。对比两个表，AreaMainKey表中id为6的单元格是空的，此处将填充默认数据。
