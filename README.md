@@ -29,13 +29,13 @@ Enumerate2=2
 **注：标记可以组合使用。**
 
 ## 生成的数据文件格式
-**[版本号4Byte]+[数据条数4Byte]+[数据类型x\*1Byte](注：INT=1,FLOAT=2,STRING=3,ENUM=4,LONG=5,DOUBLE=6)+[域xByte]....**
->INT:4Byte
->FLOAT:4Byte
->STRING:[字符串长度1Byte]+[字符串数据xByte](字符串utf8编码)
->ENUM:4Byte(按INT处理)
->LONG:8Byte
->DOUBLE:8Byte
+**{版本号4Byte}+{数据条数4Byte}+{数据类型x\*1Byte}(注：INT=1,FLOAT=2,STRING=3,ENUM=4,LONG=5,DOUBLE=6)+{域xByte}....**
+>INT:4Byte  
+>FLOAT:4Byte  
+>STRING:{字符串长度1Byte}+{字符串数据xByte}(字符串utf8编码)  
+>ENUM:4Byte(按INT处理)  
+>LONG:8Byte  
+>DOUBLE:8Byte  
 
 ## 文件结构
 生成工具：  
