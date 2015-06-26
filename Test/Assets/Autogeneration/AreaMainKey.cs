@@ -1,12 +1,13 @@
 /*
- * 生成时间：2015/3/30 13:19//例子：2014/11/20 17:57
- * 表格文件：AreaMainKey.xls//例子：Area.xls
- * 检索键：ID //例子：Name Type
+ * 生成时间：2015/6/26 12:18
+ * 表格文件：AreaMainKey.xls
+ * 检索关键字段：ID 
+ * 忽略字段：param1 
  */
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+namespace TableTool
+{
 public struct AreaMainKeyData
 {
     /// <summary>
@@ -31,10 +32,6 @@ public struct AreaMainKeyData
     /// </summary>
     public float coordinate_y;
     /// <summary>
-    /// 参数1
-    /// </summary>
-    public long param1;
-    /// <summary>
     /// 参数2
     /// </summary>
     public double param2;
@@ -47,14 +44,6 @@ public struct AreaMainKeyData
         return key;
     }
 }
-
-public enum typeEnum
-{
-	Empty=0,
-	All=1,
-	Half=2
-}
-
 public class AreaMainKeyManager
 {
     private static Dictionary<int, AreaMainKeyData> mData = new Dictionary<int, AreaMainKeyData>();
@@ -85,4 +74,5 @@ public class AreaMainKeyManager
 		var key = ID;
         return mData[key];
     }
+}
 }

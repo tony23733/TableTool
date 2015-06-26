@@ -1,12 +1,13 @@
 /*
- * 生成时间：2015/3/30 13:19//例子：2014/11/20 17:57
- * 表格文件：AreaDoubleKeys.xls//例子：Area.xls
- * 检索键：ID type //例子：Name Type
+ * 生成时间：2015/6/26 12:18
+ * 表格文件：AreaDoubleKeys.xls
+ * 检索关键字段：ID type 
+ * 忽略字段：param2 
  */
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
+namespace TableTool
+{
 public struct AreaDoubleKeysKey
 {
     /// <summary>
@@ -19,7 +20,6 @@ public struct AreaDoubleKeysKey
     /// </summary>
     public typeEnum type;
 }
-
 public struct AreaDoubleKeysData
 {
     /// <summary>
@@ -48,10 +48,6 @@ public struct AreaDoubleKeysData
     /// </summary>
     public long param1;
     /// <summary>
-    /// 参数2
-    /// </summary>
-    public double param2;
-    /// <summary>
     /// 获取key
     /// </summary>
     public AreaDoubleKeysKey GetKey()
@@ -62,14 +58,12 @@ public struct AreaDoubleKeysData
         return key;
     }
 }
-
-//public enum typeEnum
-//{
-//	Empty=0,
-//	All=1,
-//	Half=2
-//}
-
+public enum typeEnum
+{
+	Empty=0,
+	All=1,
+	Half=2
+}
 public class AreaDoubleKeysManager
 {
     private static Dictionary<AreaDoubleKeysKey, AreaDoubleKeysData> mData = new Dictionary<AreaDoubleKeysKey, AreaDoubleKeysData>();
@@ -97,9 +91,10 @@ public class AreaDoubleKeysManager
     /// </summary>
     public static AreaDoubleKeysData GetItem(int ID, typeEnum type)
     {
-        var key = new AreaDoubleKeysKey();
-        key.ID = ID;
-        key.type = type;
+		var key = new AreaDoubleKeysKey();
+		key.ID = ID;
+		key.type = type;
         return mData[key];
     }
+}
 }
